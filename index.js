@@ -1,8 +1,8 @@
-// JavaScript Import
-
+// Import statements for initialData and taskFunctions
 import { initialData } from "./initialData.js";
 import { getTasks, saveTasks, createNewTask, putTask, deleteTask } from "./utils/taskFunctions.js";
 
+// Function to initialize data if not already initialized
 function initializeData() {
   try {
     if (!localStorage.getItem('tasks')) {
@@ -10,12 +10,19 @@ function initializeData() {
       localStorage.setItem('showSideBar', 'true');
     } else {
       console.log('Data already exists in localStorage');
+      // Retrieve tasks from localStorage
+      const tasks = JSON.parse(localStorage.getItem('tasks'));
+      // Display tasks on the UI
+      tasks.forEach(task => {
+        addTaskToUI(task);
+      });
     }
   } catch (error) {
-    console.error('Error initializing data:', error.message); // Improved error message
+    console.error('Error initializing data:', error.message);
   }
 }
 
+// Object containing DOM elements
 const elements = {
   sideBarDiv: document.getElementById("side-bar-div"),
   headerBoardName: document.getElementById("header-board-name"),
@@ -28,25 +35,28 @@ const elements = {
   editTaskModal: document.querySelector(".edit-task-modal-window")
 };
 
+// Function to refresh UI with tasks for the active board
 function refreshTasksUI() {
   try {
-    const activeBoard = getTasks();
+    const activeBoard = JSON.parse(localStorage.getItem("activeBoard"));
     filterAndDisplayTasksByBoard(activeBoard);
   } catch (error) {
-    console.error('Error refreshing tasks UI:', error.message); // Improved error message
+    console.error('Error refreshing tasks UI:', error.message);
   }
 }
 
+// Function to toggle modal visibility
 function toggleModal(show, modal = elements.modalWindow) {
   try {
     if (modal) {
       modal.style.display = show ? 'block' : 'none';
     }
   } catch (error) {
-    console.error('Error toggling modal:', error.message); // Improved error message
+    console.error('Error toggling modal:', error.message);
   }
 }
 
+// Function to open edit task modal
 function openEditTaskModal(task) {
   const editModal = elements.editTaskModal;
   const taskTitleInput = editModal.querySelector("#edit-task-title-input");
@@ -59,6 +69,7 @@ function openEditTaskModal(task) {
   toggleModal(true, editModal);
 }
 
+// Function to save task changes
 function saveTaskChanges(taskId) {
   const editModal = elements.editTaskModal;
   const taskTitleInput = editModal.querySelector("#edit-task-title-input").value;
@@ -75,6 +86,7 @@ function saveTaskChanges(taskId) {
   refreshTasksUI();
 }
 
+// Function to set up event listeners
 function setupEventListeners() {
   const showSideBarBtn = document.getElementById("show-side-bar-btn");
   const hideSideBarBtn = document.getElementById("hide-side-bar-btn");
@@ -106,22 +118,22 @@ function setupEventListeners() {
   cancelEditBtn.addEventListener('click', () => {
     toggleModal(false, elements.editTaskModal);
   });
-  
+
   // Update the event listener for elements.editTaskModal to handle delete task button
-  // Update the event listener for elements.editTaskModal to handle save and delete task buttons
-elements.editTaskModal.addEventListener('click', event => {
-  if (event.target.id === 'cancel-edit-btn' || event.target.id === 'filterDiv') {
-    toggleModal(false, elements.editTaskModal);
-  } else if (event.target.id === 'save-task-changes-btn') {
-    const taskId = elements.editTaskModal.dataset.taskId;
-    saveTaskChanges(taskId);
-  } else if (event.target.id === 'delete-task-btn') {
-    const taskId = elements.editTaskModal.dataset.taskId;
-    deleteTask(taskId); // Delete the task
-    toggleModal(false, elements.editTaskModal); // Hide the modal
-    removeTaskFromUI(taskId); // Remove the task from UI
-  }
-});
+  elements.editTaskModal.addEventListener('click', event => {
+    if (event.target.id === 'cancel-edit-btn' || event.target.id === 'filterDiv') {
+      toggleModal(false, elements.editTaskModal);
+    } else if (event.target.id === 'save-task-changes-btn') {
+      const taskId = elements.editTaskModal.dataset.taskId;
+      saveTaskChanges(taskId);
+    } else if (event.target.id === 'delete-task-btn') {
+      const taskId = elements.editTaskModal.dataset.taskId;
+      deleteTask(taskId);
+      toggleModal(false, elements.editTaskModal);
+      removeTaskFromUI(taskId);
+    }
+  });
+
   elements.filterDiv.addEventListener('click', () => {
     toggleModal(false);
     elements.filterDiv.style.display = 'none';
@@ -130,6 +142,7 @@ elements.editTaskModal.addEventListener('click', event => {
   elements.themeSwitch.addEventListener('change', toggleTheme);
 }
 
+// Function to add task to UI
 function addTaskToUI(task) {
   try {
     const columnDiv = document.querySelector(`.column-div[data-status="${task.status}"] .tasks-container`);
@@ -154,11 +167,11 @@ function addTaskToUI(task) {
 
     columnDiv.appendChild(taskDiv);
   } catch (error) {
-    console.error('Error adding task to UI:', error.message); // Improved error message
+    console.error('Error adding task to UI:', error.message);
   }
 }
 
-
+// Function to add task
 function addTask(event) {
   event.preventDefault();
 
@@ -172,11 +185,12 @@ function addTask(event) {
     return;
   }
 
+  const activeBoard = JSON.parse(localStorage.getItem("activeBoard"));
   const task = {
     title: taskTitleInput,
     description: taskDescriptionInput,
     status: taskStatusInput,
-    board: JSON.parse(localStorage.getItem("activeBoard"))
+    board: activeBoard ? activeBoard.id : null
   };
 
   const newTask = createNewTask(task);
@@ -188,10 +202,11 @@ function addTask(event) {
 
     elements.layout.style.display = 'block';
 
-    saveTasks(getTasks()); // Save tasks after adding the new task
+    saveTasks(getTasks());
   }
 }
 
+// Function to toggle sidebar
 function toggleSidebar(show) {
   const sidebar = document.getElementById("side-bar-div");
   const showSideBarBtn = document.getElementById("show-side-bar-btn");
@@ -205,6 +220,7 @@ function toggleSidebar(show) {
   }
 }
 
+// Function to toggle theme
 function toggleTheme() {
   const body = document.body;
   const isLightTheme = elements.themeSwitch.checked;
@@ -212,9 +228,9 @@ function toggleTheme() {
   localStorage.setItem('light-theme', isLightTheme ? 'enabled' : 'disabled');
 }
 
+// Function to filter and display tasks by board
 function filterAndDisplayTasksByBoard(activeBoard) {
   try {
-    // Clear existing tasks from UI
     clearTasksFromUI();
 
     if (!activeBoard || !activeBoard.tasks) {
@@ -222,10 +238,8 @@ function filterAndDisplayTasksByBoard(activeBoard) {
       return;
     }
 
-    // Filter tasks based on active board
     const filteredTasks = activeBoard.tasks.filter(task => task.board === activeBoard.id);
 
-    // Display filtered tasks
     filteredTasks.forEach(task => {
       addTaskToUI(task);
     });
@@ -234,28 +248,15 @@ function filterAndDisplayTasksByBoard(activeBoard) {
   }
 }
 
-function clearTasksFromUI() {
-  try {
-    // Clear tasks from all column-divs
-    elements.columnDivs.forEach(columnDiv => {
-      columnDiv.querySelector('.tasks-container').innerHTML = '';
-    });
-  } catch (error) {
-    console.error('Error clearing tasks from UI:', error.message);
-  }
-}
-
+// Function to remove task from UI
 function removeTaskFromUI(taskId) {
-  try {
-    const taskToRemove = document.querySelector(`.task[data-task-id="${taskId}"]`);
-    if (taskToRemove) {
-      taskToRemove.remove();
-    }
-  } catch (error) {
-    console.error('Error removing task from UI:', error.message);
+  const taskDiv = document.querySelector(`.task[data-task-id="${taskId}"]`);
+  if (taskDiv) {
+    taskDiv.remove();
   }
 }
 
+// Initialization function
 function init() {
   try {
     setupEventListeners();
@@ -264,12 +265,13 @@ function init() {
     const isLightTheme = localStorage.getItem('light-theme') === 'enabled';
     document.body.classList.toggle('light-theme', isLightTheme);
     initializeData();
-    refreshTasksUI(); // Refresh UI with tasks on initialization
+    refreshTasksUI();
   } catch (error) {
-    console.error('Error initializing application:', error.message); // Improved error message
+    console.error('Error initializing application:', error.message);
   }
 }
 
+// Call init function when DOM content is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  init(); // Call init function when DOM content is loaded
+  init();
 });
