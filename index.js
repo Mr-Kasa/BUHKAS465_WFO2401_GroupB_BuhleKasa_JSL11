@@ -1,4 +1,5 @@
-// Import helper functions from utils
+// JavaScript Import
+
 import { initialData } from "./initialData.js";
 import { getTasks, saveTasks, createNewTask, putTask, deleteTask } from "./utils/taskFunctions.js";
 
@@ -96,19 +97,29 @@ function setupEventListeners() {
     addTask(event);
   });
 
-  // Update the event listener for elements.editTaskModal to handle delete task button
-elements.editTaskModal.addEventListener('click', event => {
-  if (event.target.id === 'cancel-edit-btn' || event.target.id === 'filterDiv') {
+  const cancelAddTaskBtn = elements.modalWindow.querySelector('#cancel-add-task-btn');
+  cancelAddTaskBtn.addEventListener('click', () => {
+    toggleModal(false, elements.modalWindow);
+  });
+
+  const cancelEditBtn = elements.editTaskModal.querySelector('#cancel-edit-btn');
+  cancelEditBtn.addEventListener('click', () => {
     toggleModal(false, elements.editTaskModal);
-  } else if (event.target.id === 'save-task-changes-btn') {
-    saveTaskChanges(event.target.dataset.taskId);
-  } else if (event.target.id === 'delete-task-btn') {
-    const taskId = event.target.dataset.taskId;
-    deleteTask(taskId); // Delete the task
-    toggleModal(false, elements.editTaskModal); // Hide the modal
-    removeTaskFromUI(taskId); // Remove the task from UI
-  }
-});
+  });
+  
+  // Update the event listener for elements.editTaskModal to handle delete task button
+  elements.editTaskModal.addEventListener('click', event => {
+    if (event.target.id === 'cancel-edit-btn' || event.target.id === 'filterDiv') {
+      toggleModal(false, elements.editTaskModal);
+    } else if (event.target.id === 'save-task-changes-btn') {
+      saveTaskChanges(event.target.dataset.taskId);
+    } else if (event.target.id === 'delete-task-btn') {
+      const taskId = event.target.dataset.taskId;
+      deleteTask(taskId); // Delete the task
+      toggleModal(false, elements.editTaskModal); // Hide the modal
+      removeTaskFromUI(taskId); // Remove the task from UI
+    }
+  });
 
   elements.filterDiv.addEventListener('click', () => {
     toggleModal(false);
@@ -194,7 +205,6 @@ function toggleTheme() {
   localStorage.setItem('light-theme', isLightTheme ? 'enabled' : 'disabled');
 }
 
-
 function filterAndDisplayTasksByBoard(activeBoard) {
   try {
     // Clear existing tasks from UI
@@ -216,6 +226,7 @@ function filterAndDisplayTasksByBoard(activeBoard) {
     console.error('Error filtering and displaying tasks:', error.message);
   }
 }
+
 function clearTasksFromUI() {
   try {
     // Clear tasks from all column-divs
@@ -226,6 +237,7 @@ function clearTasksFromUI() {
     console.error('Error clearing tasks from UI:', error.message);
   }
 }
+
 function removeTaskFromUI(taskId) {
   try {
     const taskToRemove = document.querySelector(`.task[data-task-id="${taskId}"]`);
@@ -236,6 +248,7 @@ function removeTaskFromUI(taskId) {
     console.error('Error removing task from UI:', error.message);
   }
 }
+
 function init() {
   try {
     setupEventListeners();
