@@ -108,19 +108,20 @@ function setupEventListeners() {
   });
   
   // Update the event listener for elements.editTaskModal to handle delete task button
-  elements.editTaskModal.addEventListener('click', event => {
-    if (event.target.id === 'cancel-edit-btn' || event.target.id === 'filterDiv') {
-      toggleModal(false, elements.editTaskModal);
-    } else if (event.target.id === 'save-task-changes-btn') {
-      saveTaskChanges(event.target.dataset.taskId);
-    } else if (event.target.id === 'delete-task-btn') {
-      const taskId = event.target.dataset.taskId;
-      deleteTask(taskId); // Delete the task
-      toggleModal(false, elements.editTaskModal); // Hide the modal
-      removeTaskFromUI(taskId); // Remove the task from UI
-    }
-  });
-
+  // Update the event listener for elements.editTaskModal to handle save and delete task buttons
+elements.editTaskModal.addEventListener('click', event => {
+  if (event.target.id === 'cancel-edit-btn' || event.target.id === 'filterDiv') {
+    toggleModal(false, elements.editTaskModal);
+  } else if (event.target.id === 'save-task-changes-btn') {
+    const taskId = elements.editTaskModal.dataset.taskId;
+    saveTaskChanges(taskId);
+  } else if (event.target.id === 'delete-task-btn') {
+    const taskId = elements.editTaskModal.dataset.taskId;
+    deleteTask(taskId); // Delete the task
+    toggleModal(false, elements.editTaskModal); // Hide the modal
+    removeTaskFromUI(taskId); // Remove the task from UI
+  }
+});
   elements.filterDiv.addEventListener('click', () => {
     toggleModal(false);
     elements.filterDiv.style.display = 'none';
@@ -146,11 +147,17 @@ function addTaskToUI(task) {
     taskDescription.classList.add('task-description');
     taskDiv.appendChild(taskDescription);
 
+    // Add event listener to show edit modal when task is clicked
+    taskDiv.addEventListener('click', () => {
+      openEditTaskModal(task);
+    });
+
     columnDiv.appendChild(taskDiv);
   } catch (error) {
     console.error('Error adding task to UI:', error.message); // Improved error message
   }
 }
+
 
 function addTask(event) {
   event.preventDefault();
