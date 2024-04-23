@@ -5,6 +5,7 @@ import { getTasks, saveTasks, createNewTask, putTask, deleteTask } from "./utils
 // Function to initialize data if not already initialized
 function initializeData() {
   try {
+    
     if (!localStorage.getItem('tasks')) {
       localStorage.setItem('tasks', JSON.stringify(initialData));
       localStorage.setItem('showSideBar', 'true');
@@ -69,21 +70,56 @@ function openEditTaskModal(task) {
   toggleModal(true, editModal);
 }
 
-// Function to save task changes
 function saveTaskChanges(taskId) {
-  const editModal = elements.editTaskModal;
-  const taskTitleInput = editModal.querySelector("#edit-task-title-input").value;
-  const taskDescriptionInput = editModal.querySelector("#edit-task-desc-input").value;
+  try {
+    console.log("Saving changes for task ID:", taskId);
 
-  const updatedTask = {
-    id: taskId,
-    title: taskTitleInput,
-    description: taskDescriptionInput
-  };
+    const editModal = elements.editTaskModal;
+    const taskTitleInput = editModal.querySelector("#edit-task-title-input").value;
+    const taskDescriptionInput = editModal.querySelector("#edit-task-desc-input").value;
+    const taskStatusInput = editModal.querySelector("#edit-select-status").value;
 
-  putTask(taskId, updatedTask);
-  toggleModal(false, editModal);
-  refreshTasksUI();
+    // Retrieve the tasks from localStorage
+    let tasks = getTasks();
+
+    console.log("Retrieved tasks from localStorage:", tasks);
+
+    // Find the index of the task to update
+    const index = tasks.findIndex(task => task.id === taskId);
+    console.log(index)
+    console.log("Index of task to update:", index);
+
+    // If the task exists
+    if (index !== -1) {
+      // Update the task properties
+      tasks[index].title = taskTitleInput;
+      tasks[index].description = taskDescriptionInput;
+      tasks[index].status = taskStatusInput;
+
+      console.log("Updated tasks:", tasks);
+
+      // Save the updated tasks to localStorage
+      saveTasks(tasks);
+
+      // Close the edit modal
+      toggleModal(false, editModal);
+
+      // Refresh the UI to reflect the changes
+      refreshTasksUI();
+    } else {
+      console.error("Task not found.");
+    }
+  } catch (error) {
+    console.error('Error saving task changes:', error.message);
+  }
+}
+
+
+// Function to delete a task
+function deleteTaskFromUI(taskId) {
+  removeTaskFromUI(taskId);
+  // Delete the task from localStorage
+  deleteTask(taskId);
 }
 
 // Function to set up event listeners
@@ -115,24 +151,25 @@ function setupEventListeners() {
   });
 
   const cancelEditBtn = elements.editTaskModal.querySelector('#cancel-edit-btn');
-  cancelEditBtn.addEventListener('click', () => {
+  cancelEditBtn.addEventListener('click', event => {
+    event.preventDefault()
     toggleModal(false, elements.editTaskModal);
   });
 
-  // Update the event listener for elements.editTaskModal to handle delete task button
-  elements.editTaskModal.addEventListener('click', event => {
-    if (event.target.id === 'cancel-edit-btn' || event.target.id === 'filterDiv') {
-      toggleModal(false, elements.editTaskModal);
-    } else if (event.target.id === 'save-task-changes-btn') {
-      const taskId = elements.editTaskModal.dataset.taskId;
-      saveTaskChanges(taskId);
-    } else if (event.target.id === 'delete-task-btn') {
-      const taskId = elements.editTaskModal.dataset.taskId;
-      deleteTask(taskId);
-      toggleModal(false, elements.editTaskModal);
-      removeTaskFromUI(taskId);
-    }
-  });
+ // Update the event listener for elements.editTaskModal to handle save task changes button
+elements.editTaskModal.addEventListener('click', event => {
+  if (event.target.id === 'cancel-edit-btn' || event.target.id === 'filterDiv') {
+    event.preventDefault();
+    toggleModal(false, elements.editTaskModal);
+  } else if (event.target.id === 'save-task-changes-btn') {
+    const taskId = elements.editTaskModal.dataset.taskId;
+    saveTaskChanges(taskId); // Call saveTaskChanges function with taskId
+  } else if (event.target.id === 'delete-task-btn') {
+    const taskId = elements.editTaskModal.dataset.taskId;
+    deleteTaskFromUI(taskId);
+    toggleModal(false, elements.editTaskModal);
+  }
+});
 
   elements.filterDiv.addEventListener('click', () => {
     toggleModal(false);
@@ -140,6 +177,8 @@ function setupEventListeners() {
   });
 
   elements.themeSwitch.addEventListener('change', toggleTheme);
+
+ 
 }
 
 // Function to add task to UI
@@ -150,15 +189,17 @@ function addTaskToUI(task) {
     taskDiv.classList.add('task');
     taskDiv.dataset.taskId = task.id;
 
+    taskDiv.style.backgroundColor = 'blue';
+    taskDiv.style.padding = '2rem';
+    taskDiv.style.border="5px"
+    taskDiv.style.margin = '2rem';
+    taskDiv.style.borderRadius = '2rem';
+
+
     const taskTitle = document.createElement('h4');
     taskTitle.textContent = task.title;
     taskTitle.classList.add('task-title');
     taskDiv.appendChild(taskTitle);
-
-    const taskDescription = document.createElement('p');
-    taskDescription.textContent = task.description;
-    taskDescription.classList.add('task-description');
-    taskDiv.appendChild(taskDescription);
 
     // Add event listener to show edit modal when task is clicked
     taskDiv.addEventListener('click', () => {
@@ -231,7 +272,7 @@ function toggleTheme() {
 // Function to filter and display tasks by board
 function filterAndDisplayTasksByBoard(activeBoard) {
   try {
-    clearTasksFromUI();
+  
 
     if (!activeBoard || !activeBoard.tasks) {
       console.error('Active board or its tasks are missing.');
@@ -254,6 +295,12 @@ function removeTaskFromUI(taskId) {
   if (taskDiv) {
     taskDiv.remove();
   }
+}
+
+// Function to delete task
+function handleDeleteTask(taskId) {
+  deleteTask(taskId);
+  removeTaskFromUI(taskId);
 }
 
 // Initialization function
