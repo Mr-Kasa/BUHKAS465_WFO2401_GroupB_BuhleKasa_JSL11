@@ -16,7 +16,7 @@
 .light-theme {
   --primary-color: #ffffff;
   --secondary-color: #e6e6e6;
-  --primary-font-color: #000000;
+  --primary-font-color: black;
   --secondary-font-color: #828fa3;
   --primary-box-shadow: 0px 8px 18px 0px rgba(176, 176, 188, 0.56);
 }
@@ -50,7 +50,7 @@ body {
   /* border: 5px solid rgb(0, 0, 0); */
   border-right: 0.1px solid #979797;
   /* flex: 0.8; */
-  display: none;
+  display: block;
   flex-direction: column;
   gap: 50px;
   /* padding-left: 50px; */
@@ -175,7 +175,7 @@ h4 {
   border: none;
   width: 50px;
   height: 40px;
-  z-index: 2;
+  z-index: 5;
   position: absolute;
   bottom: 45px;
   border-radius: 0 20px 20px 0;
@@ -285,8 +285,11 @@ header {
   box-shadow: var(--primary-box-shadow);
   cursor: pointer;
   margin-bottom: 15px;
+  
 }
-
+.task-div{
+  background-color: #219C90;
+}
 .p-task {
   margin-left: 25px;
 }
@@ -360,6 +363,7 @@ header {
   justify-content: space-between;
   gap: 7px;
 }
+
 
 .edit-task-div.button-group {
   display: flex;
@@ -556,7 +560,7 @@ h2 {
 
 /* textarea#edit-task-desc.input.edit-task-description-input {
   color: red;
-} */
+} 
 
 /* Modal Window */
 
