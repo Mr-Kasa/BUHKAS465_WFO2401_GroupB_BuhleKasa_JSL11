@@ -106,16 +106,20 @@ body {
   margin: 0;
   border-radius: 0 20px 20px 0;
   height: 40px;
-  background-color: #21202c;
+  background-color: #21202c; /* Background color */
   border: 0;
-  color: var(--secondary-font-color);
+  color: var(--secondary-font-color); /* Font color */
   font-size: 20px;
   cursor: pointer;
   overflow: hidden;
   font-weight: 500;
   padding: 28px 12px 28px 50px;
 }
-
+.board-btn.active {
+  background-color: #219C90; /* Background color when active */
+  color: white; /* Font color when active */
+  font-weight: 500;
+}
 .active {
   background-color: #219C90;
   color: white;

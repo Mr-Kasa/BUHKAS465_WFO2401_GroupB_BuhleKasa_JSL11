@@ -1,50 +1,43 @@
-// utils/taskFunction.js
 
-// Simulate fetching tasks from localStorage
-export const getTasks = () => {
-  const tasks = localStorage.getItem('tasks');
-  return tasks ? JSON.parse(tasks) : [];
-};
+function getTasks() {
+  return JSON.parse(localStorage.getItem('tasks')) || [];
+}
 
-// Simulate saving tasks to localStorage
-const saveTasks = (tasks) => {
-  localStorage.setItem('tasks', JSON.stringify(tasks));
-};
-
-export const createNewTask = (task) => {
-  const tasks = getTasks(); // Retrieve existing tasks
-  const newTask = { ...task, id: new Date().getTime() }; // Create new task with unique ID
-  tasks.push(newTask); // Add new task to the array
-  saveTasks(tasks); // Save updated tasks array to local storage
-  return newTask; // Return the newly created task
-};
+// Function to save tasks to localStorage
+function saveTasks(tasks) {
+  localStorage.setItem('tasks', JSON.stringify(tasks.map(task => JSON.parse(JSON.stringify(task)))));
+}
 
 
-export const patchTask = (id, updates) => {
+// Function to create a new task
+function createNewTask(task) {
   const tasks = getTasks();
-  const taskIndex = tasks.findIndex(task => task.id === id);
-  if (taskIndex > -1) {
-      tasks[taskIndex] = { ...tasks[taskIndex], ...updates };
-      saveTasks(tasks);
-      // Previously: location.reload(); Now: We'll refresh the UI instead.
+  const newTask = { id: generateId(), ...task };
+  tasks.push(newTask);
+  saveTasks(tasks); // Save tasks to local storage
+  return newTask;
+}
+
+// Function to update an existing task
+function putTask(taskId, updatedTask) {
+  const tasks = getTasks();
+  const index = tasks.findIndex(task => task.id === taskId);
+  if (index !== -1) {
+    tasks[index] = updatedTask;
+    saveTasks(tasks); // Save updated tasks to local storage
   }
-  return tasks; // Optionally return the updated tasks list for further processing
-};
+}
 
-export const putTask = (id, updatedTask) => {
-  const tasks = getTasks();
-  const taskIndex = tasks.findIndex((task) => task.id === id);
-  if (taskIndex > -1) {
-    tasks[taskIndex] = updatedTask;
-    saveTasks(tasks);
-  }
-  location.reload(); // Or better, re-render tasks without reloading
-};
+// Function to delete a task
+function deleteTask(taskId) {
+  const tasks = getTasks().filter(task => task.id !== taskId);
+  saveTasks(tasks); // Save updated tasks to local storage
+}
 
-export const deleteTask = (id) => {
-  const tasks = getTasks();
-  const updatedTasks = tasks.filter(task => task.id !== id);
-  saveTasks(updatedTasks);
-  // Previously: location.reload(); Now: We'll refresh the UI instead.
-  return updatedTasks; // Optionally return the updated tasks list for further processing
-};
+// Function to generate a unique task ID
+function generateId() {
+  return '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// Exporting functions
+export { getTasks, saveTasks, createNewTask, putTask, deleteTask };
