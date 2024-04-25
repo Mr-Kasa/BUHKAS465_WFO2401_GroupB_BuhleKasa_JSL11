@@ -1,6 +1,8 @@
 // Import statements for initialData and taskFunctions
 import { initialData } from "./initialData.js";
-import { getTasks, saveTasks, createNewTask, putTask, deleteTask } from "./utils/taskFunctions.js";
+import { getTasks, saveTasks, createNewTask, putTask, deleteTask,} from "./utils/taskFunctions.js";
+
+
 
 // Function to initialize data if not already initialized
 function initializeData() {
@@ -12,7 +14,7 @@ function initializeData() {
       // If not, initialize with initialData
       tasks = initialData;
       // Save initialData to localStorage after stringifying
-      saveTasksToLocalStorage(tasks);
+      saveTasks(tasks); // Call saveTasks function
     } else {
       console.log('Data already exists in localStorage');
     }
@@ -27,6 +29,7 @@ function initializeData() {
     console.error('Error initializing data:', error.message);
   }
 }
+
 
 // Function to save tasks to localStorage in string form
 function saveTasksToLocalStorage(tasks) {
@@ -94,6 +97,7 @@ function openEditTaskModal(task) {
 
 function saveTaskChanges(taskId) {
   try {
+     console.log('Task ID received in saveTaskChanges:', taskId);
     const editModal = elements.editTaskModal;
     const taskTitleInput = editModal.querySelector("#edit-task-title-input").value;
     const taskDescriptionInput = editModal.querySelector("#edit-task-desc-input").value;
@@ -335,43 +339,63 @@ elements.layout.addEventListener('click', event => {
 
 
   
-function addTask(event) {
-  event.preventDefault();
-
-  const taskTitleInput = elements.modalWindow.querySelector("#title-input").value;
-  const taskDescriptionInput = elements.modalWindow.querySelector("#desc-input").value;
-  const taskStatusInput = elements.modalWindow.querySelector("#select-status").value;
-
-  // Basic input validation
-  if (!taskTitleInput || !taskDescriptionInput || !taskStatusInput) {
-    console.error('All fields are required.');
-    return;
+  function addTask(event) {
+    event.preventDefault();
+  
+    // Function to generate a unique ID
+    function generateUniqueId() {
+      const timestamp = Date.now().toString(36); // Convert current timestamp to base36 string
+      const randomString = Math.random().toString(36).substr(2, 5); // Generate random string
+      return timestamp + randomString; // Combine timestamp and random string
+    }
+  
+    const taskTitleInput = elements.modalWindow.querySelector("#title-input").value;
+    const taskDescriptionInput = elements.modalWindow.querySelector("#desc-input").value;
+    const taskStatusInput = elements.modalWindow.querySelector("#select-status").value;
+  
+    // Basic input validation
+    if (!taskTitleInput || !taskDescriptionInput || !taskStatusInput) {
+      console.error('All fields are required.');
+      return;
+    }
+  
+    const activeBoard = JSON.parse(localStorage.getItem("activeBoard"));
+    console.log("Active Board:", activeBoard); // Debug statement
+  
+    const taskId = generateUniqueId(); // Generate a unique task ID
+  
+    const task = {
+      id: taskId,
+      title: taskTitleInput,
+      description: taskDescriptionInput,
+      status: taskStatusInput,
+      board: activeBoard ? activeBoard.id : null
+    };
+  
+    console.log("New Task:", task); // Debug statement
+  
+    const newTask = createNewTask(task);
+    console.log("Newly created task:", newTask); // Debug statement
+  
+    if (newTask) {
+      addTaskToUI(newTask);
+      toggleModal(false);
+      event.target.reset();
+  
+      elements.layout.style.display = 'block';
+  
+      const tasks = getTasks();
+      console.log("Tasks from localStorage before adding new task:", tasks); // Debug statement
+  
+      tasks.push(newTask);
+      console.log("Tasks after adding new task:", tasks); // Debug statement
+  
+      saveTasksToLocalStorage(tasks);
+      console.log("Tasks saved to localStorage."); // Debug statement
+    }
   }
-
-  const activeBoard = JSON.parse(localStorage.getItem("activeBoard"));
-  const task = {
-    id: generateTaskId(), // Generate a unique task ID
-    title: taskTitleInput,
-    description: taskDescriptionInput,
-    status: taskStatusInput,
-    board: activeBoard ? activeBoard.id : null
-  };
-
-  const newTask = createNewTask(task);
-
-  if (newTask) {
-    addTaskToUI(newTask);
-    toggleModal(false);
-    event.target.reset();
-
-    elements.layout.style.display = 'block';
-
-    // Save the updated tasks to local storage
-    const tasks = getTasks();
-    tasks.push(newTask);
-    saveTasksToLocalStorage(tasks);
-  }
-}
+  
+  
 
 // Function to toggle sidebar
 function toggleSidebar(show) {
